@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiniWorld Real - Firebase Phone + Gmail</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!--  FIREBASE -  SMS OTP -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<meta name="theme-color" content="#08080f">
+<style>
+*{box-sizing:border-box;font-family:'Segoe UI',sans-serif}body{background:#08080f;color:#fff;margin:0;padding-bottom:90px}
+header{position:sticky;top:0;background:#08080f;padding:11px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #222;z-index:30;flex-wrap:wrap;gap:8px}
+.logo{font-size:22px;font-weight:900;cursor:pointer;user-select:none}.logo span{color:#a78bfa}
+.btn{padding:9px 13px;border-radius:999px;border:none;font-weight:bold;cursor:pointer;font-size:12px}.btn-p{background:#7c3aed;color:#fff}.btn-g{background:#1f1f2e;color:#fff;border:1px solid #333}.btn-green{background:#00a651;color:#fff}.btn-pink{background:#e2136e;color:#fff}.btn-red{background:#dc2626;color:#fff}
+.wrap{max-width:1180px;margin:auto;padding:12px}
+.card{background:#13131f;border:1px solid #26263a;border-radius:20px;padding:15px;margin-bottom:14px}
+input,textarea,select{width:100%;padding:11px;margin:5px 0 7px;background:#0f0f1a;border:1px solid #2a2a3d;color:#fff;border-radius:12px;outline:none;font-size:14px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}@media(max-width:700px){.grid4{grid-template-columns:1fr 1fr}}
+.opt{border:2px solid #2a2a3d;border-radius:12px;padding:8px 3px;text-align:center;cursor:pointer;font-size:11px;background:#0f0f1a}.opt.active{border-color:#f472b6;background:#2a1520}.opt span{font-size:19px;display:block}
+.big{width:100%;padding:14px;background:linear-gradient(90deg,#7c3aed,#db2777,#f59e0b);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:900;cursor:pointer;margin-top:10px}
+.shop-item{background:#0f0f1a;border:1px solid #26263a;border-radius:14px;padding:10px;text-align:center}.shop-item img{width:100%;height:130px;object-fit:cover;border-radius:10px}
+.badge{display:inline-block;background:#2a1a4d;color:#c4b5fd;padding:4px 9px;border-radius:999px;font-size:11px}
+.section-title{font-size:17px;font-weight:900;margin:6px 0 8px}.section-title span{color:#f472b6}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:50;align-items:center;justify-content:center;padding:12px}.modal.open{display:flex}.modal-box{background:#17171f;border:1px solid #333;border-radius:20px;padding:18px;max-width:560px;width:100%;max-height:92vh;overflow:auto}
+.pay-opt{border:2px solid #2a2a3d;border-radius:14px;padding:10px;margin:7px 0;cursor:pointer;display:flex;gap:10px;align-items:center}.pay-opt.active{border-color:#7c3aed;background:#1e1533}
+.coin-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0}.coin{border:2px solid #2a2a3d;border-radius:14px;padding:10px;text-align:center;cursor:pointer}.coin.active{border-color:#f472b6;background:#2a1520}
+.chat-box{background:#0f0f1a;border:1px solid #26263a;border-radius:14px;padding:10px;max-height:300px;overflow:auto}.msg{padding:8px 10px;border-radius:12px;margin:6px 0;font-size:13px;max-width:85%;line-height:1.5}.msg.me{background:#7c3aed;margin-left:auto}.msg.other{background:#1f1f2e}.msg.admin{background:#065f46;border:1px solid #10b981}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#13131f;border-top:1px solid #26263a;display:flex;justify-content:space-around;padding:9px 0;z-index:30}.bottom-nav div{text-align:center;font-size:11px;color:#aaa;cursor:pointer}.bottom-nav span{font-size:20px;display:block}
+.tab{display:inline-block;padding:8px 14px;border-radius:999px;background:#1f1f2e;border:1px solid #333;cursor:pointer;font-size:12px;margin-right:6px}.tab.active{background:#7c3aed}
+.comment-box{background:#0f0f1a;border-radius:10px;padding:8px;margin-top:8px}.comment{font-size:12px;padding:6px 8px;background:#1f1f2e;border-radius:8px;margin-top:5px}
+.lock-screen{position:fixed;inset:0;background:#08080f;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}.lock-box{background:#13131f;border:1px solid #333;border-radius:20px;padding:22px;max-width:430px;width:100%;text-align:center}
+.hidden{display:none!important}.game-item{background:#0f0f1a;border:1px solid #26263a;border-radius:14px;padding:12px;text-align:center}
+.login-tab{display:inline-block;padding:9px 18px;border-radius:999px;background:#1f1f2e;border:1px solid #333;cursor:pointer;font-size:13px;margin:0 4px}.login-tab.active{background:#7c3aed;color:#fff}
+</style></head><body>
+
+<!--  LOCK - GMAIL +   OTP -->
+<div class="lock-screen" id="lockScreen">
+<div class="lock-box">
+<div style="font-size:50px"></div>
+<h1 style="margin:5px 0">Mini<span style="color:#a78bfa">World</span></h1>
+<p style="color:#aaa;font-size:13px">  /  Gmail    </p>
+<div style="margin:10px 0"><span class="login-tab active" id="tabGmail" onclick="switchLoginTab('gmail')"> Gmail </span><span class="login-tab" id="tabNumber" onclick="switchLoginTab('number')">   (SMS)</span></div>
+
+<div id="loginGmail">
+<p style="font-size:12px;color:#888">Google    -  Gmail    </p>
+<div id="g_id_onload" data-client_id="453936751137-3n9vgp7lbjq83mll7vna2va2o521rvgo.apps.googleusercontent.com" data-callback="handleGoogleLogin" data-auto_prompt="false"></div>
+<div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_black" data-text="sign_in_with" data-shape="pill" data-logo_alignment="left" style="display:flex;justify-content:center;margin:10px 0"></div>
+</div>
+
+<div id="loginNumber" class="hidden">
+<div style="text-align:left">
+<label style="color:#fbbf24;font-size:13px"> </label><input id="authName" placeholder="  ">
+<label style="color:#fbbf24;font-size:13px">  -   , SMS </label><input id="authPhone" placeholder="01XXXXXXXXX" maxlength="11" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+<label style="color:#fbbf24;font-size:13px">  (  ,    )</label><input id="authPass" type="password" placeholder="  ">
+</div>
+<div id="recaptcha-container" style="margin:10px 0;display:flex;justify-content:center"></div>
+<button class="btn btn-green" style="width:100%;padding:12px" onclick="sendRealOTP()">  OTP SMS  </button>
+<div id="realOtpBox" style="display:none;background:#065f46;border:1px solid #10b981;border-radius:12px;padding:12px;margin-top:10px">
+<b>   SMS !</b><br><span style="font-size:12px">   SMS   SMS    </span><br>
+<input id="realOtpInput" placeholder="SMS   6  " maxlength="6">
+<button class="big" onclick="verifyRealOTP()"> OTP  </button>
+</div>
+<p style="font-size:11px;color:#888"> :  +  +   OTP   OTP     <br> :  +  + OTP -    </p>
+</div>
+
+<div id="loginMsg" style="font-size:13px;color:#f87171;margin-top:8px;font-weight:bold"></div>
+<div id="loginSuccess" style="font-size:13px;color:#34d399;margin-top:8px;font-weight:bold"></div>
+</div>
+</div>
+
+<header>
+<div class="logo" id="logoGlobe" onclick="globeClick()"> Mini<span>World</span></div>
+<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+<span class="badge" id="coinDisplay"> : 10</span>
+<span class="badge" id="userDisplay"> </span>
+<img id="userPic" style="width:28px;height:28px;border-radius:50%;display:none">
+<button class="btn btn-g" onclick="openModal('inboxModal')">  <span id="inboxBadge" style="background:#dc2626;padding:2px 6px;border-radius:999px">0</span></button>
+<button class="btn btn-green" onclick="openModal('payModal')"> </button>
+<button class="btn btn-red" onclick="logout()">Logout</button>
+</div>
+</header>
+
+<div style="max-width:1180px;margin:auto;padding:12px 12px 0">
+<div style="background:#13131f;border:2px solid #7c3aed;border-radius:999px;display:flex;padding:5px;align-items:center"><span style="font-size:20px;padding:0 8px"></span><input id="searchInput" placeholder="... KGF, , ,  , , ..." oninput="doSearch()" style="border:none;background:transparent;flex:1;margin:0"><button class="btn btn-p" onclick="doSearch()"></button></div>
+<div style="margin-top:8px"><span style="font-size:12px;color:#888">: </span><button class="btn btn-g" onclick="quickSearch('KGF')">KGF</button><button class="btn btn-g" onclick="quickSearch('')"></button><button class="btn btn-g" onclick="quickSearch('')"></button><button class="btn btn-g" onclick="quickSearch('')"></button><button class="btn btn-g" onclick="quickSearch(' ')"> </button><button class="btn btn-g" onclick="quickSearch('')"></button></div>
+<div id="searchResult" style="margin-top:8px;font-size:13px;color:#aaa"></div>
+<div id="syncStatus" style="margin-top:6px;font-size:12px;color:#fbbf24"> Supabase    </div>
+</div>
+
+<div class="wrap">
+<div class="card"><div class="section-title"> <span></span></div><div id="catTabs" style="display:flex;flex-wrap:wrap;gap:6px"></div><div id="catInfo" style="font-size:12px;color:#888;margin-top:8px"></div></div>
+<div class="card"><div class="section-title"> <span id="mainTitle"></span></div><div class="grid4" id="mainGrid"></div><div id="emptyMsg" class="hidden" style="text-align:center;color:#888;padding:20px">    </div><button class="btn btn-g" style="width:100%;margin-top:10px" onclick="loadMore()">  </button></div>
+<div class="card"><div class="section-title"> <span> -    !</span></div><p style="color:#888;font-size:13px">, , , , , ,   -   </p><div style="display:flex;gap:8px;margin-bottom:10px"><input id="gameSearch" placeholder="  ..." oninput="searchGames()"><select id="gameCat" onchange="searchGames()"><option value=""> </option><option></option><option></option><option></option><option></option><option></option></select></div><div class="grid4" id="gameGrid"></div><div style="text-align:center;padding:14px;color:#aaa">  ,   ... </div><button class="btn btn-p" style="width:100%" onclick="loadMoreGames(100)">    </button><div style="background:#0f0f1a;padding:10px;border-radius:12px;margin-top:10px;font-size:12px;color:#888;text-align:center">  : <b style="color:#fff">100,000,000,000,000</b> | : <b id="gameCount" style="color:#fff">0</b> </div></div>
+<div class="card"><div class="section-title"> <span>  / </span></div><div class="grid3"><div class="game-item"><br><b></b><br><input id="calcInput" placeholder="100+50*2"><button class="btn btn-p" onclick="doCalc()">= </button><div id="calcResult" style="font-weight:900"></div></div><div class="game-item"><br><b>  </b><br><input id="usdInput" type="number" placeholder="10"><button class="btn btn-green" onclick="convertMoney()"> </button><div id="moneyResult" style="font-weight:900"></div></div><div class="game-item"><br><b></b><br><input id="birthYear" type="number" placeholder="2005"><button class="btn btn-g" onclick="calcAge()"></button><div id="ageResult"></div></div><div class="game-item"><br><b>BMI</b><br><input id="bmiW" type="number" placeholder=" kg"><input id="bmiH" type="number" placeholder=" "><button class="btn btn-g" onclick="calcBMI()">BMI</button><div id="bmiResult"></div></div><div class="game-item"><br><b>QR </b><br><input id="qrText" placeholder=""><button class="btn btn-g" onclick="genQR()">QR</button><div id="qrResult"></div></div><div class="game-item"><br><b> </b><br><button class="btn btn-p" onclick="genPass()"></button><div id="passResult"></div></div><div class="game-item"><br><b></b><br><button class="btn btn-p" style="background:#f59e0b;color:#000" onclick="tellFortune()"> </button><div id="fortuneResult"></div></div><div class="game-item"><br><b></b><br><button class="btn btn-pink" onclick="tellJoke()"></button><div id="jokeResult"></div></div><div class="game-item"><br><b></b><br><input id="transInput" placeholder=""><button class="btn btn-g" onclick="doTranslate()"></button><div id="transResult"></div></div></div><div id="allFunctions" style="margin-top:10px"></div></div>
+<div class="card"><div class="section-title"> <span>AI  </span></div><label style="color:#fbbf24;font-size:13px">  </label><input type="file" accept="image/*" onchange="previewImg(event)"><img id="preview" style="width:100%;border-radius:12px;display:none;margin-top:8px"><div style="font-size:13px;font-weight:900;margin-top:10px"> </div><div class="grid4" id="outfitGrid"></div><label style="color:#fbbf24;font-size:13px"> Prompt</label><input id="prompt" value="Beautiful girl wearing red saree, in village, dancing"><button class="big" onclick="makeVideo()">   - 1 </button><div id="videoStatus" style="text-align:center;color:#c4b5fd;font-size:13px;margin-top:8px"></div></div>
+<div class="card"><div class="section-title"> <span> -  /  / </span></div><div class="coin-grid"><div class="coin" onclick="selectCoin(this,10,50)"><b>10 </b><span> </span></div><div class="coin active" onclick="selectCoin(this,30,120)"><b>30  </b><span> </span></div><div class="coin" onclick="selectCoin(this,100,300)"><b>100 </b><span> </span></div></div><button class="btn btn-green" style="width:100%;padding:12px" onclick="openModal('payModal')">  /  /   </button></div>
+<div style="text-align:center;color:#666;font-size:12px;padding:20px"> MiniWorld Real | Firebase Phone OTP + Google + Admin + Inbox + Comment + Search | Made in Bangladesh </div>
+</div>
+
+<div class="modal" id="inboxModal"><div class="modal-box"><h2 style="margin:0"> </h2><div style="margin:10px 0"><span class="tab active" id="tabAdmin" onclick="switchInbox('admin')">  </span><span class="tab" id="tabPublic" onclick="switchInbox('public')"> </span></div><div class="chat-box" id="inboxBox"></div><div style="display:flex;gap:8px;margin-top:8px"><input id="inboxInput" placeholder=" ..." onkeydown="if(event.key==='Enter') sendInbox()"><button class="btn btn-p" onclick="sendInbox()"></button></div><button class="btn btn-g" style="width:100%;margin-top:8px" onclick="closeModal('inboxModal')"></button></div></div>
+<div class="modal" id="payModal"><div class="modal-box"><h2 style="margin:0">  </h2><p style="color:#888;font-size:13px" id="payInfo">  -  </p><div class="pay-opt active" onclick="selectPay(this,'')"><span style="font-size:22px"></span><div><b style="color:#e2136e"></b><br><small style="color:#aaa">Send Money: <b style="color:#fff">017XX-XXXXXX</b>    </small></div></div><div class="pay-opt" onclick="selectPay(this,'')"><span style="font-size:22px"></span><div><b style="color:#8c3494"></b><br><small style="color:#aaa">Send Money: <b style="color:#fff">017XX-XXXXXX</b></small></div></div><div class="pay-opt" onclick="selectPay(this,'')"><span style="font-size:22px"></span><div><b style="color:#f6921e"></b><br><small style="color:#aaa">Send Money: <b style="color:#fff">017XX-XXXXXX</b></small></div></div><label></label><input id="senderNum" placeholder="01XXXXXXXXX"><label>TrxID</label><input id="trxId" placeholder="9HX7..."><button class="big" onclick="submitPay()"> </button><button class="btn btn-g" style="width:100%;margin-top:8px" onclick="closeModal('payModal')"></button></div></div>
+<div class="modal" id="adminModal"><div class="modal-box"><h2 style="margin:0">   <span style="font-size:12px;background:#dc2626;padding:3px 8px;border-radius:999px">SECRET</span></h2><p style="font-size:12px;color:#888">     +   </p><div id="adminLoginBox"><label>  </label><input id="adminPass" type="password" placeholder=" "><button class="big" onclick="checkAdmin()"> </button></div><div id="adminPanel" class="hidden"><div style="background:#065f46;padding:10px;border-radius:12px;font-size:13px">  !</div><label>  </label><input id="newCatName" placeholder=":  "><button class="btn btn-green" style="width:100%" onclick="addCategory()">   </button><label>   /  / </label><input id="newItemTitle" placeholder=" - : KGF 3"><select id="newItemCat"></select><input id="newItemDesc" placeholder=""><input id="newItemPrice" type="number" placeholder=" - 0  "><button class="btn btn-p" style="width:100%" onclick="addItem()">   -  </button><label>  + </label><div id="adminUsers" style="background:#0f0f1a;padding:10px;border-radius:12px;font-size:13px;max-height:200px;overflow:auto"></div><button class="btn btn-g" style="width:100%;margin-top:8px" onclick="refreshAdmin()"> </button></div><button class="btn btn-g" style="width:100%;margin-top:10px" onclick="closeModal('adminModal')"></button></div></div>
+<div class="bottom-nav"><div onclick="window.scrollTo({top:0,behavior:'smooth'})"><span></span></div><div onclick="quickSearch('KGF')"><span></span></div><div onclick="openModal('inboxModal')"><span></span></div><div onclick="document.getElementById('gameGrid').scrollIntoView({behavior:'smooth'})"><span></span></div><div onclick="logout()"><span></span></div></div>
+
+<script>
+// =====   Firebase Config -    =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBaCkO1aOC_W7cXrW6rpFyw-tFyqfgpks8",
+  authDomain: "addatube-d44ef.firebaseapp.com",
+  databaseURL: "https://addatube-d44ef-default-rtdb.firebaseio.com",
+  projectId: "addatube-d44ef",
+  storageBucket: "addatube-d44ef.firebasestorage.app",
+  messagingSenderId: "111475512438",
+  appId: "1:111475512438:web:fb46820ef2f688a1843b57"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+let confirmationResult = null;
+let recaptchaVerifier = null;
+
+const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
+const SUPABASE_KEY = 'YOUR-ANON-KEY';
+let supabaseClient = null;
+try{ if(!SUPABASE_URL.includes('YOUR-PROJECT')){ supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); document.getElementById('syncStatus').innerText=' Supabase  '; } }catch(e){}
+
+let DB = JSON.parse(localStorage.getItem('mw_db') || 'null');
+if(!DB){
+DB = [
+{ id:1, title:'KGF Chapter 2', cat:'', tags:'kgf kgf2 yash action movie  ', desc:'Yash  ', price:0, img:'https://picsum.photos/400/300?random=11', likes:1250 },
+{ id:2, title:'KGF Chapter 1', cat:'', tags:'kgf kgf1 yash  ', desc:'KGF ', price:0, img:'https://picsum.photos/400/300?random=12', likes:980 },
+{ id:3, title:'  ', cat:'', tags:'natok     funny', desc:'  ', price:0, img:'https://picsum.photos/400/300?random=13', likes:2100 },
+{ id:4, title:' ', cat:'', tags:'shari saree   ', desc:'  ', price:1500, img:'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400', likes:320 },
+{ id:5, title:' ', cat:'', tags:'panjabi punjabi   ', desc:' ', price:1200, img:'https://picsum.photos/400/300?random=15', likes:410 },
+{ id:6, title:' ', cat:'', tags:'gan gaan bangla song  ', desc:'  ', price:0, img:'https://picsum.photos/400/300?random=16', likes:800 },
+{ id:7, title:'Pushpa ', cat:'', tags:'pushpa allu arjun movie  ', desc:'Allu Arjun ', price:0, img:'https://picsum.photos/400/300?random=19', likes:1800 },
+{ id:8, title:' ', cat:'', tags:'job chakri   ', desc:', ', price:0, img:'https://picsum.photos/400/300?random=18', likes:90 },
+{ id:9, title:' ', cat:'', tags:'ludo ludu game  ', desc:' ', price:0, img:'https://picsum.photos/400/300?random=30', likes:500 },
+{ id:10, title:' ', cat:'', tags:'snake sap game  ', desc:' ', price:0, img:'https://picsum.photos/400/300?random=31', likes:600 },
+];
+localStorage.setItem('mw_db', JSON.stringify(DB));
+}
+let CATS = JSON.parse(localStorage.getItem('mw_cats') || 'null');
+if(!CATS){ CATS = ['','','','','','','']; localStorage.setItem('mw_cats', JSON.stringify(CATS)); }
+let currentUser = JSON.parse(localStorage.getItem('mw_user') || 'null');
+let coins = parseInt(localStorage.getItem('mw_coins') || '10');
+let currentCat = ''; let shownCount = 8; let currentInbox='admin'; let globeCount=0; let globeTimer=null;
+const ADMIN_PASS = 'Farjana$#)';
+let gameLoaded = 0; let gameSearchTerm=''; let gameCatFilter='';
+
+function showMsg(msg, ok){ document.getElementById('loginMsg').innerText = ok ? '' : msg; document.getElementById('loginSuccess').innerText = ok ? msg : ''; }
+function switchLoginTab(type){ document.getElementById('tabGmail').className='login-tab'+(type==='gmail'?' active':''); document.getElementById('tabNumber').className='login-tab'+(type==='number'?' active':''); document.getElementById('loginGmail').classList.toggle('hidden', type!=='gmail'); document.getElementById('loginNumber').classList.toggle('hidden', type!=='number'); }
+function isValidPhone(phone){ return /^01[3-9][0-9]{8}$/.test(phone); }
+
+// =====   SMS OTP - Firebase =====
+async function sendRealOTP(){
+  const name = document.getElementById('authName').value.trim();
+  const phone = document.getElementById('authPhone').value.trim();
+  const pass = document.getElementById('authPass').value;
+  if(name.length < 3){ showMsg('      !'); return; }
+  if(!isValidPhone(phone)){ showMsg('   ! 01  ,     SMS  '); return; }
+  if(pass.length < 6){ showMsg('      !'); return; }
+  //        -   OTP  
+  let users = JSON.parse(localStorage.getItem('mw_users') || '[]');
+  let found = users.find(u=>u.phone===phone);
+  if(found && found.pass !== pass){ showMsg('    ,   !   '); return; }
+  try{
+    showMsg('', true); document.getElementById('loginSuccess').innerText = ' SMS ...   ...';
+    if(!recaptchaVerifier){
+      recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'normal', callback: ()=>{} });
+    }
+    confirmationResult = await auth.signInWithPhoneNumber('+88' + phone, recaptchaVerifier);
+    document.getElementById('realOtpBox').style.display = 'block';
+    document.getElementById('loginSuccess').innerText = ` ${phone}  SMS !       SMS  `;
+  }catch(e){
+    console.log(e);
+    let msg = e.message;
+    if(msg.includes('invalid-phone')) msg = '  ';
+    if(msg.includes('too-many-requests')) msg = '   ,      ';
+    if(msg.includes('app-not-authorized')) msg = 'Firebase    Authorized  Firebase  Authentication  Settings  Authorized domains     ';
+    showMsg(' SMS  ! ' + msg);
+    if(recaptchaVerifier){ try{ recaptchaVerifier.clear(); recaptchaVerifier = null; }catch(_){} }
+  }
+}
+async function verifyRealOTP(){
+  const name = document.getElementById('authName').value.trim();
+  const phone = document.getElementById('authPhone').value.trim();
+  const pass = document.getElementById('authPass').value;
+  const code = document.getElementById('realOtpInput').value.trim();
+  if(code.length !== 6){ showMsg(' 6   ! SMS     '); return; }
+  if(!confirmationResult){ showMsg('  OTP    !'); return; }
+  try{
+    const result = await confirmationResult.confirm(code);
+    const fbUser = result.user;
+    // OTP  -    /  
+    let users = JSON.parse(localStorage.getItem('mw_users') || '[]');
+    let found = users.find(u=>u.phone===phone);
+    if(!found){
+      users.push({ name, phone, pass, fbUid: fbUser.uid, created: new Date().toLocaleString('bn-BD') });
+      localStorage.setItem('mw_users', JSON.stringify(users));
+      showMsg(`      , ${name}!`, true);
+    } else {
+      showMsg(`   +  + OTP -   !  ${found.name}!`, true);
+    }
+    currentUser = { name: found ? found.name : name, phone: fbUser.phoneNumber || phone, fbUid: fbUser.uid };
+    localStorage.setItem('mw_user', JSON.stringify(currentUser));
+    setTimeout(()=>{ checkLogin(); }, 800);
+  }catch(e){
+    showMsg(' OTP !  OTP    SMS     ');
+  }
+}
+function handleGoogleLogin(response){
+  try{
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    if(!payload.email || !payload.email.includes('@')){ showMsg('  Gmail   !'); return; }
+    currentUser = { name: payload.name, email: payload.email, pic: payload.picture, phone: payload.email };
+    localStorage.setItem('mw_user', JSON.stringify(currentUser));
+    let users = JSON.parse(localStorage.getItem('mw_users') || '[]');
+    if(!users.find(u=>u.phone===payload.email)) users.push({ name: payload.name, phone: payload.email, pass:'google', created:new Date().toLocaleString('bn-BD') });
+    localStorage.setItem('mw_users', JSON.stringify(users));
+    checkLogin();
+  }catch(e){ showMsg(' Google Login   - Google Cloud    Authorized Origins   '); }
+}
+function checkLogin(){
+  if(currentUser){
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('userDisplay').innerText = ` ${currentUser.name}`;
+    document.getElementById('coinDisplay').innerText = ` : ${coins}`;
+    if(currentUser.pic){ const p=document.getElementById('userPic'); p.src=currentUser.pic; p.style.display='block'; }
+  } else { document.getElementById('lockScreen').style.display='flex'; }
+}
+checkLogin();
+function logout(){ localStorage.removeItem('mw_user'); currentUser=null; location.reload(); }
+
+// ===== ADMIN -    =====
+function globeClick(){ globeCount++; clearTimeout(globeTimer); globeTimer=setTimeout(()=>{globeCount=0;},2000); if(globeCount>=5){ globeCount=0; document.getElementById('adminLoginBox').classList.remove('hidden'); document.getElementById('adminPanel').classList.add('hidden'); openModal('adminModal'); } }
+function checkAdmin(){ const p=document.getElementById('adminPass').value; if(p===ADMIN_PASS){ document.getElementById('adminLoginBox').classList.add('hidden'); document.getElementById('adminPanel').classList.remove('hidden'); refreshAdmin(); } else alert('  !'); }
+function refreshAdmin(){ const sel=document.getElementById('newItemCat'); sel.innerHTML=''; CATS.filter(c=>c!=='').forEach(c=>{ sel.innerHTML+=`<option>${c}</option>`; }); const users=JSON.parse(localStorage.getItem('mw_users')||'[]'); const adminMsgs=JSON.parse(localStorage.getItem('mw_inbox_admin')||'[]'); document.getElementById('adminUsers').innerHTML=`<b> : ${users.length} </b><br>${users.map(u=>` ${u.name} - ${u.phone}`).join('<br>')||' '}<hr><b>  : ${adminMsgs.length} </b><br>${adminMsgs.slice(-10).map(m=>` ${m.from}: ${m.text}`).join('<br>')||''}`; }
+async function addCategory(){ const name=document.getElementById('newCatName').value.trim(); if(!name){alert(' ');return;} if(CATS.includes(name)){alert(' ');return;} CATS.push(name); localStorage.setItem('mw_cats', JSON.stringify(CATS)); if(supabaseClient){ await supabaseClient.from('categories').insert([{name}]); } document.getElementById('newCatName').value=''; renderCats(); refreshAdmin(); alert(`   : ${name} -  !`); }
+async function addItem(){ const title=document.getElementById('newItemTitle').value.trim(); const cat=document.getElementById('newItemCat').value; const desc=document.getElementById('newItemDesc').value.trim()||' '; const price=parseInt(document.getElementById('newItemPrice').value||'0'); if(!title){alert(' ');return;} const newId=Date.now(); const item={id:newId, title, cat, tags:title.toLowerCase()+' '+cat.toLowerCase()+' '+desc.toLowerCase(), desc, price, img:`https://picsum.photos/400/300?random=${newId%1000}`, likes:0}; DB.unshift(item); localStorage.setItem('mw_db', JSON.stringify(DB)); if(supabaseClient){ await supabaseClient.from('items').insert([{id:newId, title, cat, tags:item.tags, description:desc, price, img:item.img, likes:0}]); } document.getElementById('newItemTitle').value=''; renderMain(); refreshAdmin(); alert(`  : ${title} -  !`); }
+
+// ===== CATS + MAIN =====
+function renderCats(){ const el=document.getElementById('catTabs'); el.innerHTML=''; CATS.forEach(c=>{ const b=document.createElement('span'); b.className='tab'+(c===currentCat?' active':''); b.innerText=c===''?' ':c; b.onclick=()=>{currentCat=c; shownCount=8; document.getElementById('searchInput').value=''; renderCats(); renderMain();}; el.appendChild(b); }); document.getElementById('catInfo').innerText=` : ${CATS.length}  |  : ${DB.length} `; }
+function getFiltered(){ const q=document.getElementById('searchInput').value.trim().toLowerCase(); let list=DB; if(currentCat!=='') list=list.filter(x=>x.cat===currentCat); if(q) list=list.filter(x=>(x.title.toLowerCase().includes(q)||x.tags.toLowerCase().includes(q)||x.desc.toLowerCase().includes(q)||x.cat.toLowerCase().includes(q))); return list; }
+function renderMain(){ const list=getFiltered(); const grid=document.getElementById('mainGrid'); grid.innerHTML=''; document.getElementById('mainTitle').innerText=currentCat===''?' - , , , , ':currentCat; if(list.length===0){document.getElementById('emptyMsg').classList.remove('hidden');return;} document.getElementById('emptyMsg').classList.add('hidden'); list.slice(0,shownCount).forEach(item=>{ const div=document.createElement('div'); div.className='shop-item'; const comments=JSON.parse(localStorage.getItem('mw_comments_'+item.id)||'[]'); div.innerHTML=`<img src="${item.img}" onerror="this.src='https://picsum.photos/400/300?random=1'"><b style="font-size:14px">${item.title}</b><br><small style="color:#888">${item.cat} |  ${item.likes} | ${item.desc}</small><br><b style="color:#fbbf24">${item.price===0?'  - ':' '+item.price}</b><br><button class="btn btn-p" style="margin-top:6px" onclick="openItem(${item.id})">${item.price===0?' ':' '}</button><button class="btn btn-g" style="margin-top:6px" onclick="likeItem(${item.id})"> ${item.likes}</button><div class="comment-box"><b style="font-size:12px">  (${comments.length})</b><div>${comments.slice(-3).map(c=>`<div class="comment"><b>${c.name}:</b> ${c.text}</div>`).join('')||'<div style="font-size:11px;color:#888"> </div>'}</div><div style="display:flex;gap:5px;margin-top:5px"><input id="commentInput-${item.id}" placeholder=" ..." style="margin:0;padding:8px"><button class="btn btn-p" style="padding:8px 10px" onclick="addComment(${item.id})"></button></div></div>`; grid.appendChild(div); }); }
+function loadMore(){ shownCount+=8; renderMain(); }
+function doSearch(){ shownCount=8; renderMain(); const q=document.getElementById('searchInput').value.trim(); const list=getFiltered(); document.getElementById('searchResult').innerText=q?` "${q}" - ${list.length}   ` : ''; }
+function quickSearch(q){ document.getElementById('searchInput').value=q; currentCat=''; renderCats(); doSearch(); document.getElementById('mainGrid').scrollIntoView({behavior:'smooth'}); }
+function openItem(id){ const it=DB.find(x=>x.id===id); if(!it) return; if(it.price===0) alert(` "${it.title}" ...\n${it.desc}`); else { alert(` "${it.title}" - ${it.price}`); openModal('payModal'); } }
+function likeItem(id){ const it=DB.find(x=>x.id===id); it.likes++; localStorage.setItem('mw_db', JSON.stringify(DB)); renderMain(); }
+async function addComment(id){ if(!currentUser){alert('   ');return;} const inp=document.getElementById('commentInput-'+id); const text=inp.value.trim(); if(!text) return; const key='mw_comments_'+id; const list=JSON.parse(localStorage.getItem(key)||'[]'); list.push({name:currentUser.name, text, time:new Date().toLocaleString('bn-BD')}); localStorage.setItem(key, JSON.stringify(list)); if(supabaseClient){ await supabaseClient.from('comments').insert([{item_id:id, name:currentUser.name, text}]); } inp.value=''; renderMain(); alert('  !'); }
+
+// ===== INBOX =====
+function openModal(id){ document.getElementById(id).classList.add('open'); if(id==='inboxModal') renderInbox(); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function switchInbox(type){ currentInbox=type; document.getElementById('tabAdmin').className='tab'+(type==='admin'?' active':''); document.getElementById('tabPublic').className='tab'+(type==='public'?' active':''); renderInbox(); }
+function renderInbox(){ const key=currentInbox==='admin'?'mw_inbox_admin':'mw_inbox_public'; const msgs=JSON.parse(localStorage.getItem(key)||'[]'); const box=document.getElementById('inboxBox'); if(msgs.length===0) box.innerHTML=`<div style="text-align:center;color:#888;font-size:13px;padding:20px">  </div>`; else box.innerHTML=msgs.map(m=>{ const isMe=m.from===(currentUser?.name||''); return `<div class="msg ${isMe?'me':(m.from===''?'admin':'other')}"><b>${isMe?'':m.from}:</b> ${m.text}<br><small style="opacity:.7">${m.time}</small></div>`; }).join(''); box.scrollTop=box.scrollHeight; document.getElementById('inboxBadge').innerText=JSON.parse(localStorage.getItem('mw_inbox_admin')||'[]').length+JSON.parse(localStorage.getItem('mw_inbox_public')||'[]').length; }
+async function sendInbox(){ const inp=document.getElementById('inboxInput'); const text=inp.value.trim(); if(!text) return; if(!currentUser){alert(' ');return;} const key=currentInbox==='admin'?'mw_inbox_admin':'mw_inbox_public'; const msgs=JSON.parse(localStorage.getItem(key)||'[]'); msgs.push({from:currentUser.name, text, time:new Date().toLocaleString('bn-BD')}); localStorage.setItem(key, JSON.stringify(msgs)); if(supabaseClient){ await supabaseClient.from('messages').insert([{type:currentInbox, from_name:currentUser.name, text}]); } inp.value=''; renderInbox(); if(currentInbox==='admin'){ setTimeout(()=>{ const m2=JSON.parse(localStorage.getItem(key)||'[]'); m2.push({from:'', text:' !  ,     ', time:new Date().toLocaleString('bn-BD')}); localStorage.setItem(key, JSON.stringify(m2)); renderInbox(); },1500); } }
+
+// ===== GAMES =====
+const GAME_TYPES = [
+{ icon:'', name:'', cat:'' }, { icon:'', name:' ', cat:'' }, { icon:'', name:'', cat:'' },
+{ icon:'', name:' ', cat:'' }, { icon:'', name:' ', cat:'' }, { icon:'', name:' ', cat:'' },
+{ icon:'', name:' ', cat:'' }, { icon:'', name:' ', cat:'' }, { icon:'', name:'', cat:'' },
+{ icon:'', name:'', cat:'' }, { icon:'', name:' ', cat:'' }, { icon:'', name:'', cat:'' },
+{ icon:'', name:'', cat:'' }, { icon:'', name:' ', cat:'' }, { icon:'', name:'', cat:'' },
+{ icon:'', name:'', cat:'' }, { icon:'', name:' ', cat:'' }, { icon:'', name:'', cat:'' },
+{ icon:'', name:'', cat:'' }, { icon:'', name:'', cat:'' }
+];
+function makeGame(i){ const t = GAME_TYPES[i % GAME_TYPES.length]; return { i, icon:t.icon, name:`${t.name} #${i}`, cat:t.cat, players: 100 + (i*13)%5000 }; }
+function renderGameItem(g){ return `<div class="game-item"><div style="font-size:28px">${g.icon}</div><b>${g.name}</b><br><small style="color:#888">${g.cat} |  ${g.players}  </small><br><button class="btn btn-p" style="margin-top:6px" onclick="playGame('${g.name}')"> </button></div>`; }
+function loadMoreGames(count){ const grid=document.getElementById('gameGrid'); let html=''; for(let k=0;k<count;k++){ gameLoaded++; if(gameSearchTerm){ const g=makeGame(gameLoaded); if(!g.name.toLowerCase().includes(gameSearchTerm.toLowerCase())) continue; html+=renderGameItem(g); } else if(gameCatFilter){ const g=makeGame(gameLoaded); if(g.cat!==gameCatFilter) continue; html+=renderGameItem(g); } else html+=renderGameItem(makeGame(gameLoaded)); } grid.insertAdjacentHTML('beforeend', html); document.getElementById('gameCount').innerText = gameLoaded.toLocaleString('en-US'); }
+function searchGames(){ gameSearchTerm=document.getElementById('gameSearch').value.trim(); gameCatFilter=document.getElementById('gameCat').value; gameLoaded=0; document.getElementById('gameGrid').innerHTML=''; loadMoreGames(20); }
+function playGame(name){ if(name.includes('')){ const d=Math.floor(Math.random()*6)+1; alert(`  -  : ${d} ${d===6?' !':''}`); } else if(name.includes('')){ alert(`   - : ${Math.floor(Math.random()*100)+10}`); } else if(name.includes('')){ const r=Math.floor(Math.random()*7); alert(r===0?' !':`  ${r}  !`); } else { alert(` ${name} !  !`); } }
+
+// ===== TOOLS =====
+function doCalc(){ try{ document.getElementById('calcResult').innerText='= '+eval(document.getElementById('calcInput').value); }catch{ document.getElementById('calcResult').innerText=''; } }
+function convertMoney(){ const u=parseFloat(document.getElementById('usdInput').value||0); document.getElementById('moneyResult').innerText=` ${u*110} `; }
+function calcAge(){ const y=parseInt(document.getElementById('birthYear').value||0); document.getElementById('ageResult').innerText=`: ${2026-y} `; }
+function calcBMI(){ const w=parseFloat(document.getElementById('bmiW').value||0), h=parseFloat(document.getElementById('bmiH').value||0)*0.3048; document.getElementById('bmiResult').innerText=`BMI: ${(w/(h*h)).toFixed(1)}`; }
+function genQR(){ const t=document.getElementById('qrText').value.trim()||'MiniWorld'; document.getElementById('qrResult').innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(t)}" style="border-radius:8px">`; }
+function doTranslate(){ const t=document.getElementById('transInput').value.trim(); document.getElementById('transResult').innerText=`"${t}"  Hello!`; }
+function genPass(){ const p='Mini'+Math.floor(Math.random()*9999)+'@2026'; document.getElementById('passResult').innerText=` ${p}`; }
+function tellFortune(){ const f=['    !','     !','     !']; document.getElementById('fortuneResult').innerText=f[Math.floor(Math.random()*f.length)]; }
+function tellJoke(){ document.getElementById('jokeResult').innerText=' :    ? :   ! '; }
+
+// ===== VIDEO + PAY =====
+function mkGrid(id, items){ const el=document.getElementById(id); if(!el) return; el.innerHTML=''; items.forEach((it,i)=>{ const d=document.createElement('div'); d.className='opt'+(i===0?' active':''); d.innerHTML=`<span>${it[0]}</span>${it[1]}`; d.onclick=()=>{ el.querySelectorAll('.opt').forEach(x=>x.classList.remove('active')); d.classList.add('active'); }; el.appendChild(d); }); }
+mkGrid('outfitGrid',[['',''],['',' '],['',''],['','-'],['',''],['',''],['',''],['','']]);
+function previewImg(e){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ const img=document.getElementById('preview'); img.src=r.result; img.style.display='block'; }; r.readAsDataURL(f); }
+function makeVideo(){ if(coins<=0){ alert(' !'); openModal('payModal'); return; } coins--; localStorage.setItem('mw_coins', coins); document.getElementById('coinDisplay').innerText=` : ${coins}`; document.getElementById('videoStatus').innerText='  ...'; setTimeout(()=>{ document.getElementById('videoStatus').innerText='   !   Fal Key '; },1500); }
+let selCoin=30, selPrice=120, selPay='';
+function selectCoin(el,c,p){ document.querySelectorAll('.coin').forEach(x=>x.classList.remove('active')); el.classList.add('active'); selCoin=c; selPrice=p; document.getElementById('payInfo').innerText=`${c}  - ${p} `; }
+function selectPay(el,n){ document.querySelectorAll('.pay-opt').forEach(x=>x.classList.remove('active')); el.classList.add('active'); selPay=n; }
+function submitPay(){ const num=document.getElementById('senderNum').value.trim(), trx=document.getElementById('trxId').value.trim(); if(!num||!trx){alert(' + TrxID ');return;} coins+=selCoin; localStorage.setItem('mw_coins', coins); document.getElementById('coinDisplay').innerText=` : ${coins}`; closeModal('payModal'); alert(` ${selPay}  ${selPrice}   ${selCoin}   `); }
+
+(function(){ const el=document.getElementById('allFunctions'); let html='<div style="font-size:12px;color:#888;margin-bottom:8px"> :</div><div class="grid4">'; const funcs=['','','QR','','BMI','','','','','']; for(let i=1;i<=40;i++){ const f=funcs[i%funcs.length]; html+=`<div class="game-item" style="font-size:12px"> ${f} #${i}<br><button class="btn btn-g" style="margin-top:6px" onclick="alert(' ${f} #${i} ...')"></button></div>`; } html+='</div>'; el.innerHTML=html; })();
+
+renderCats(); renderMain(); renderInbox(); loadMoreGames(20);
+window.onscroll=()=>{ if(window.innerHeight + window.scrollY >= document.body.scrollHeight - 800){ loadMoreGames(10); } };
+</script>
+</body></html>
